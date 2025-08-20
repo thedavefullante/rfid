@@ -17,7 +17,7 @@
       <!-- API Result -->
       <div class="mb-4">
         <h3 class="font-semibold text-gray-700 mb-1">API Result:</h3>
-        <div id="health-api-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+        <div id="health-api-result" class="break-words min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
           Waiting for API response...
         </div>
         <button
@@ -37,15 +37,15 @@
       <!-- WebSocket Result -->
       <div>
         <h3 class="font-semibold text-gray-700 mb-1">WebSocket Result:</h3>
-        <div id="health-ws-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+        <div id="health-ws-result" class="break-words min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
           Waiting for WebSocket messages...
         </div>
-        <button
+        <!-- <button
           class="mt-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
           onclick="startHealthWebSocket()"
         >
           Start Health WebSocket
-        </button>
+        </button> -->
       </div>
     </div>
 
@@ -56,7 +56,7 @@
       <!-- API Result -->
       <div class="mb-4">
         <h3 class="font-semibold text-gray-700 mb-1">API Result:</h3>
-        <div id="scan-api-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+        <div id="scan-api-result" class="break-words min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
           Waiting for API response...
         </div>
         <button
@@ -76,15 +76,15 @@
       <!-- WebSocket Result -->
       <div>
         <h3 class="font-semibold text-gray-700 mb-1">WebSocket Result:</h3>
-        <div id="scan-ws-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+        <div id="scan-ws-result" class="break-words min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
           Waiting for WebSocket messages...
         </div>
-        <button
+        <!-- <button
           class="mt-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
           onclick="startScanWebSocket()"
         >
           Start Scan WebSocket
-        </button>
+        </button> -->
         <button
           class="mt-2 px-4 py-2 bg-gray-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
           onclick="resetScanWebSocket()"
@@ -111,7 +111,7 @@
         <!-- API Result -->
         <div class="mb-4">
             <h3 class="font-semibold text-gray-700 mb-1">API Result:</h3>
-            <div id="write-api-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+            <div id="write-api-result" class="break-words min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
             Waiting for API response...
             </div>
             <button
@@ -164,20 +164,22 @@
     }
 
     // ---------- Scanning WebSocket ----------
+    let arr_data = [];
     function startScanWebSocket() {
       const result = document.getElementById("scan-ws-result");
       result.textContent = "Starting WebSocket...";
       const ws = new WebSocket("ws://localhost:9000/ws/rfid/scan"); // change if needed
-      ws.onopen = () => result.textContent = "WebSocket connected... => ";
-      result.textContent = "";
+      ws.onopen = () => result.textContent = "WebSocket connected...";      
       ws.onmessage = (event) => {
-        result.textContent += event.data;
+        arr_data.push(event.data);
+        result.textContent = `[${arr_data.join(',')}]`;
       }
       ws.onclose = () => result.textContent = "WebSocket disconnected.";
     }
 
     function resetScanWebSocket() {
       const result = document.getElementById("scan-ws-result");
+      arr_data = [];
       result.textContent = "Starting WebSocket...";
     }
 
@@ -210,6 +212,9 @@
             result.textContent = "Scan API call failed: " + err;
         }
     }
+
+    startHealthWebSocket()
+    startScanWebSocket()
   </script>
 
 </body>
