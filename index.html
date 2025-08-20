@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RFID Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+
+  <div class="w-full max-w-3xl space-y-8">
+
+    <!-- Healthcheck Module -->
+    <div class="border rounded-lg p-6 shadow-md bg-white">
+      <h2 class="text-xl font-bold mb-3 text-gray-800">Healthcheck</h2>
+      
+      <!-- API Result -->
+      <div class="mb-4">
+        <h3 class="font-semibold text-gray-700 mb-1">API Result:</h3>
+        <div id="health-api-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+          Waiting for API response...
+        </div>
+        <button
+          class="mt-2 px-4 py-2 bg-lime-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
+          onclick="callHealthApi('start')"
+        >
+          START
+        </button>
+        <button
+          class="mt-2 px-4 py-2 bg-red-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
+          onclick="callHealthApi('stop')"
+        >
+          STOP
+        </button>
+      </div>
+
+      <!-- WebSocket Result -->
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-1">WebSocket Result:</h3>
+        <div id="health-ws-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+          Waiting for WebSocket messages...
+        </div>
+        <button
+          class="mt-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
+          onclick="startHealthWebSocket()"
+        >
+          Start Health WebSocket
+        </button>
+      </div>
+    </div>
+
+    <!-- Scanning Module -->
+    <div class="border rounded-lg p-6 shadow-md bg-white">
+      <h2 class="text-xl font-bold mb-3 text-gray-800">Scanning</h2>
+      
+      <!-- API Result -->
+      <div class="mb-4">
+        <h3 class="font-semibold text-gray-700 mb-1">API Result:</h3>
+        <div id="scan-api-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+          Waiting for API response...
+        </div>
+        <button
+          class="mt-2 px-4 py-2 bg-lime-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
+          onclick="callScanApi('start')"
+        >
+          START
+        </button>
+        <button
+          class="mt-2 px-4 py-2 bg-red-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
+          onclick="callScanApi('stop')"
+        >
+          STOP
+        </button>
+      </div>
+
+      <!-- WebSocket Result -->
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-1">WebSocket Result:</h3>
+        <div id="scan-ws-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+          Waiting for WebSocket messages...
+        </div>
+        <button
+          class="mt-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
+          onclick="startScanWebSocket()"
+        >
+          Start Scan WebSocket
+        </button>
+        <button
+          class="mt-2 px-4 py-2 bg-gray-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
+          onclick="resetScanWebSocket()"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Write Module -->
+    <div class="border rounded-lg p-6 shadow-md bg-white">
+        <h2 class="text-xl font-bold mb-3 text-gray-800">Write</h2>
+        
+        <!-- JSON Input -->
+        <div class="mb-4">
+            <h3 class="font-semibold text-gray-700 mb-1">Input JSON:</h3>
+            <textarea
+            id="json-input"
+            class="w-full min-h-[100px] p-3 border rounded-md bg-gray-50 text-gray-700"
+            placeholder='{"tid":"ea2341232...","epc":"TERMINAL-23423"}'
+            >{"tid": "e2003412012f170006ea45a1","epc": "Dave Martin Fullante"}</textarea>
+        </div>
+
+        <!-- API Result -->
+        <div class="mb-4">
+            <h3 class="font-semibold text-gray-700 mb-1">API Result:</h3>
+            <div id="write-api-result" class="min-h-[60px] p-3 bg-gray-50 border rounded-md text-gray-700">
+            Waiting for API response...
+            </div>
+            <button
+            class="mt-2 px-4 py-2 bg-lime-500 hover:bg-orange-600 text-white rounded-lg font-semibold shadow"
+            onclick="callWriteApi()"
+            >
+            Submit
+            </button>
+        </div>
+    </div>
+
+
+  </div>
+
+  <script>
+    // ---------- Healthcheck API ----------
+    async function callHealthApi(action) {
+      const result = document.getElementById("health-api-result");
+      result.textContent = "Calling Health API...";
+      try {
+        const response = await fetch(`http://localhost:9000/api/v1/rfid/check/${action}`);
+        const data = await response.json();
+        result.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        result.textContent = "Health API call failed: " + err;
+      }
+    }
+
+    // ---------- Healthcheck WebSocket ----------
+    function startHealthWebSocket() {
+      const result = document.getElementById("health-ws-result");
+      result.textContent = "Starting WebSocket...";
+      const ws = new WebSocket("ws://localhost:9000/ws/rfid/status"); // change if needed
+      ws.onopen = () => result.textContent = "WebSocket connected...";
+      ws.onmessage = (event) => result.textContent = event.data;
+      ws.onclose = () => result.textContent = "WebSocket disconnected.";
+    }
+
+    // ---------- Scanning API ----------
+    async function callScanApi(action) {
+      const result = document.getElementById("scan-api-result");
+      result.textContent = "Calling Scan API...";
+      try {
+        const response = await fetch(`http://localhost:9000/api/v1/rfid/scan/${action}`);
+        const data = await response.json();
+        result.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        result.textContent = "Scan API call failed: " + err;
+      }
+    }
+
+    // ---------- Scanning WebSocket ----------
+    function startScanWebSocket() {
+      const result = document.getElementById("scan-ws-result");
+      result.textContent = "Starting WebSocket...";
+      const ws = new WebSocket("ws://localhost:9000/ws/rfid/scan"); // change if needed
+      ws.onopen = () => result.textContent = "WebSocket connected... => ";
+      result.textContent = "";
+      ws.onmessage = (event) => {
+        result.textContent += event.data;
+      }
+      ws.onclose = () => result.textContent = "WebSocket disconnected.";
+    }
+
+    function resetScanWebSocket() {
+      const result = document.getElementById("scan-ws-result");
+      result.textContent = "Starting WebSocket...";
+    }
+
+    async function callWriteApi() {
+        const result = document.getElementById("write-api-result");
+        const jsonInput = document.getElementById("json-input").value;
+        let data;
+
+        try {
+            data = JSON.parse(jsonInput);
+        } catch (err) {
+            result.textContent = "Invalid JSON: " + err;
+            return;
+        }
+
+        result.textContent = "";
+        try {
+            const response = await fetch(`http://localhost:9000/api/v1/rfid/write/epc/${data.tid}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data) // convert JS object to JSON string
+            });
+
+            const responseData = await response.json();
+            console.log(responseData);
+            result.textContent = JSON.stringify(responseData, null, 2);
+        } catch (err) {
+            result.textContent = "Scan API call failed: " + err;
+        }
+    }
+  </script>
+
+</body>
+</html>
